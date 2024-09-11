@@ -1,0 +1,14 @@
+{
+  "name": "siyuan-plugin-dev",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Development scripts for SiYuan Plugin",
+  "bin": {
+    "make-link": "./make_dev_link.js",
+    "make-install": "./make_dist_install.js",
+    "update-version": "./update_version.js"
+  },
+  "keywords": [],
+  "author": "frostime",
+  "license": "MIT"
+}
