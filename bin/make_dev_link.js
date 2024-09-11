@@ -1,13 +1,5 @@
 #!/usr/bin/env node
-/*
- * Copyright (c) 2024 by frostime. All Rights Reserved.
- * @Author       : frostime
- * @Date         : 2023-07-15 15:31:31
- * @FilePath     : /scripts/make_dev_link.js
- * @LastEditTime : 2024-09-06 19:54:22
- * @Description  : 
- */
-// make_dev_link.js
+
 import fs from 'fs';
 import { log, error, getSiYuanDir, chooseTarget, getThisPluginName, makeSymbolicLink } from './utils.js';
 

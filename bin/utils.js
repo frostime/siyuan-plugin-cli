@@ -1,13 +1,5 @@
 #!/usr/bin/env node
-/*
- * Copyright (c) 2024 by frostime. All Rights Reserved.
- * @Author       : frostime
- * @Date         : 2024-09-06 17:42:57
- * @FilePath     : /scripts/utils.js
- * @LastEditTime : 2024-09-06 19:23:12
- * @Description  : 
- */
-// common.js
+
 import fs from 'fs';
 import path from 'node:path';
 import http from 'node:http';

@@ -1,13 +1,5 @@
 #!/usr/bin/env node
-/*
- * Copyright (c) 2024 by frostime. All Rights Reserved.
- * @Author       : frostime
- * @Date         : 2024-03-28 20:03:59
- * @FilePath     : /scripts/make_install.js
- * @LastEditTime : 2024-09-06 18:08:19
- * @Description  : 
- */
-// make_install.js
+
 import fs from 'fs';
 import { log, error, getSiYuanDir, chooseTarget, copyDirectory, getThisPluginName } from './utils.js';
 

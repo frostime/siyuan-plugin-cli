@@ -1,12 +1,13 @@
 {
-  "name": "siyuan-plugin-dev",
+  "name": "siyuan-plugin-cli",
   "version": "1.0.0",
   "type": "module",
   "description": "Development scripts for SiYuan Plugin",
   "bin": {
-    "make-link": "./make_dev_link.js",
-    "make-install": "./make_dist_install.js",
-    "update-version": "./update_version.js"
+    "make-link": "./bin/make_dev_link.js",
+    "make-install": "./bin/make_dist_install.js",
+    "update-version": "./bin/update_version.js",
+    "make-link-win": "./bin/make_dev_link_win.cjs"
   },
   "keywords": [],
   "author": "frostime",
