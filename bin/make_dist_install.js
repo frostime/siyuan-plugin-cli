@@ -1,9 +1,20 @@
 #!/usr/bin/env node
 
 import fs from 'fs';
+import path from 'path';
 import { log, error, getSiYuanDir, chooseTarget, copyDirectory, getThisPluginName } from './utils.js';
 
 let targetDir = '';
+let distDirName = 'dist';
+
+// Parse from command line arguments
+if (process.argv.length > 2) {
+    let arg = process.argv[2];
+    log(`>>> Got dev directory name from command line argument: ${arg}`);
+    if (arg !== '') {
+        distDirName = arg.replace(/\/$/, '');
+    }
+}
 
 /**
  * 1. Get the parent directory to install the plugin
@@ -30,7 +41,8 @@ if (!fs.existsSync(targetDir)) {
 /**
  * 2. The dist directory, which contains the compiled plugin code
  */
-const distDir = `${process.cwd()}/dist`;
+// const distDir = `${process.cwd()}/dist`;
+const distDir = path.join(process.cwd(), distDirName);
 if (!fs.existsSync(distDir)) {
     fs.mkdirSync(distDir);
 }

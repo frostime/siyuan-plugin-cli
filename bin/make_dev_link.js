@@ -1,9 +1,20 @@
 #!/usr/bin/env node
 
 import fs from 'fs';
+import path from 'path';
 import { log, error, getSiYuanDir, chooseTarget, getThisPluginName, makeSymbolicLink } from './utils.js';
 
 let targetDir = '';
+let devDirName = 'dev';
+
+// Parse from command line arguments
+if (process.argv.length > 2) {
+    let arg = process.argv[2];
+    log(`>>> Got dev directory name from command line argument: ${arg}`);
+    if (arg !== '') {
+        devDirName = arg.replace(/\/$/, '');
+    }
+}
 
 /**
  * 1. Get the parent directory to install the plugin
@@ -38,7 +49,7 @@ if (!fs.existsSync(targetDir)) {
 /**
  * 2. The dev directory, which contains the compiled plugin code
  */
-const devDir = `${process.cwd()}/dev`;
+const devDir = path.join(targetDir, devDirName);
 if (!fs.existsSync(devDir)) {
     fs.mkdirSync(devDir);
 }
