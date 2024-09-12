@@ -1,8 +1,12 @@
 {
   "name": "siyuan-plugin-cli",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "type": "module",
   "description": "Development scripts for SiYuan Plugin",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/frostime/siyuan-plugin-cli.git"
+  },
   "bin": {
     "make-link": "./bin/make_dev_link.js",
     "make-install": "./bin/make_dist_install.js",

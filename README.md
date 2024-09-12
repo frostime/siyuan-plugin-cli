@@ -15,7 +15,7 @@ pnpm add -D siyuan-plugin-cli
 - `npx make-link` 创建软链接到 SiYuan 插件目录，将插件开发下的 `dev` 目录链接到 SiYuan 插件目录下的 `plugins` 目录下
 - `npx make-link-win` 同上，适用于 Windows 系统，会自动需求管理员权限
 - `npx make-install` 安装插件到 SiYuan 插件目录下
-    1. 首先执行 `npm run build`` 编译插件
+    1. 首先执行 `npm run build` 编译插件
     2. 将 `dist` 目录下的插件文件复制到 SiYuan 对应插件的目录中
 - `npx update-version` 更新插件版本号，会自动更新 `package.json` 和 `plugin.json` 中的 `version` 字段
 
