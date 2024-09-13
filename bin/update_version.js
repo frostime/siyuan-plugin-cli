@@ -71,18 +71,37 @@ function incrementVersion(version, type) {
     return `${major}.${minor}.${patch}`;
 }
 
+// Helper function to check file existence
+const fileExists = (filePath) => fs.existsSync(filePath);
+
 // Main script
 (async function () {
     try {
         const pluginJsonPath = path.join(process.cwd(), 'plugin.json');
         const packageJsonPath = path.join(process.cwd(), 'package.json');
 
-        // Read both JSON files
-        const pluginData = await readJsonFile(pluginJsonPath);
-        const packageData = await readJsonFile(packageJsonPath);
+        // Check if plugin.json exists
+        if (!fileExists(pluginJsonPath)) {
+            throw new Error('plugin.json file is required but not found.');
+        }
 
-        // Get the current version from both files (assuming both have the same version)
-        const currentVersion = pluginData.version || packageData.version;
+        // Read plugin.json
+        const pluginData = await readJsonFile(pluginJsonPath);
+
+        // Try to read package.json only if it exists
+        let packageData = {};
+        const packageExists = fileExists(packageJsonPath);
+        if (packageExists) {
+            packageData = await readJsonFile(packageJsonPath);
+        }
+
+        // Get the current version from plugin.json (if package.json exists, use it as a fallback)
+        const currentVersion = pluginData.version || (packageExists ? packageData.version : null);
+
+        if (!currentVersion) {
+            throw new Error('No version found in plugin.json (or package.json if it exists).');
+        }
+
         console.log(`\n🌟  Current version: \x1b[36m${currentVersion}\x1b[0m\n`);
 
         // Calculate potential new versions for auto-update
@@ -124,17 +143,19 @@ function incrementVersion(version, type) {
                 return;
         }
 
-        // Update the version in both plugin.json and package.json
+        // Update the version in plugin.json
         pluginData.version = newVersion;
-        packageData.version = newVersion;
-
-        // Write the updated JSON back to files
         await writeJsonFile(pluginJsonPath, pluginData);
-        await writeJsonFile(packageJsonPath, packageData);
+
+        // If package.json exists, update its version as well
+        if (packageExists) {
+            packageData.version = newVersion;
+            await writeJsonFile(packageJsonPath, packageData);
+        }
 
         console.log(`\n✅  Version successfully updated to: \x1b[32m${newVersion}\x1b[0m\n`);
 
     } catch (error) {
-        console.error('❌  Error:', error);
+        console.error('❌  Error:', error.message);
     }
 })();

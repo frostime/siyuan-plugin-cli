@@ -49,7 +49,7 @@ if (!fs.existsSync(targetDir)) {
 /**
  * 2. The dev directory, which contains the compiled plugin code
  */
-const devDir = path.join(targetDir, devDirName);
+const devDir = path.join(process.cwd(), devDirName);
 if (!fs.existsSync(devDir)) {
     fs.mkdirSync(devDir);
 }

@@ -156,7 +156,7 @@ export function makeSymbolicLink(srcPath, targetPath) {
         //Go 1.23 no longer supports junctions as symlinks
         //Please refer to https://github.com/siyuan-note/siyuan/issues/12399
         fs.symlinkSync(srcPath, targetPath, 'dir');
-        log(`Done! Created symlink ${targetPath}`);
+        log(`Done! Created symlink ${targetPath} --> ${srcPath}`);
         return;
     }
 
