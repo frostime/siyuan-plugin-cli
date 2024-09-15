@@ -1,10 +1,9 @@
 #!/usr/bin/env node
 
 import fs from 'fs';
-import path from 'path';
 import { execSync } from 'child_process';
 import readline from 'readline';
-import { log, error } from './utils.js';
+import { error } from './utils.js';
 
 const rl = readline.createInterface({
     input: process.stdin,
@@ -98,6 +97,32 @@ function updateJsonFiles(info) {
     });
 }
 
+function initGit() {
+    try {
+        execSync('git init', { stdio: 'pipe' });
+        execSync('git add .', { stdio: 'pipe' });
+        execSync('git branch -m master main', { stdio: 'pipe' });
+    } catch (error) {
+        console.error('❌ Error initializing Git repository:', error.message);
+        console.error('Stack Trace:', error.stack);
+    }
+}
+
+function printSummary(info) {
+    console.log('\n📊 Plugin Summary:');
+    console.log(`   Name: ${info.name}`);
+    console.log(`   Author: ${info.author}`);
+    console.log(`   Version: ${info.version}`);
+    console.log(`   GitHub URL: https://github.com/${info.author}/${info.name}`);
+}
+
+function printGithubInstructions(info) {
+    console.log('\n🚀 To upload your plugin to GitHub:');
+    console.log(`1. Create a new repository on GitHub: ${info.name}`);
+    console.log(`2. git remote add origin ssh://git@github.com/${info.author}/${info.name}.git`);
+    console.log('3. git push -u origin main');
+}
+
 async function createSyPlugin() {
     console.log('🚀 Welcome to SiYuan Plugin Creator!');
 
@@ -123,7 +148,15 @@ async function createSyPlugin() {
     console.log('🔧 Updating configuration files...');
     updateJsonFiles(info);
 
+    console.log('🔧 Initializing Git repository...');
+    initGit();
+
     console.log(`✅ SiYuan plugin "${info.name}" has been created successfully!`);
+
+    printSummary(info);
+
+    printGithubInstructions(info);
+
     rl.close();
 }
 
