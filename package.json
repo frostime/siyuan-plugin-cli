@@ -12,7 +12,8 @@
     "make-install": "./bin/make_dist_install.js",
     "update-version": "./bin/update_version.js",
     "make-link-win": "./bin/make_dev_link_win.js",
-    "create-sy-plugin": "./bin/create_sy_plugin.js"
+    "create-sy-plugin": "./bin/create_sy_plugin.js",
+    "create-plugin": "./bin/create_sy_plugin.js"
   },
   "keywords": [],
   "author": "frostime",
