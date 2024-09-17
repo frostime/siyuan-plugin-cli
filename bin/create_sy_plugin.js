@@ -1,9 +1,13 @@
 #!/usr/bin/env node
 
 import fs from 'fs';
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
 import readline from 'readline';
 import { error } from './utils.js';
+import { initGithub, checkRepoExists, createRepo, pushToGithub, getGithubToken, saveGithubToken, enableWorkflowPermissions } from './github.js';
+
 
 const rl = readline.createInterface({
     input: process.stdin,
@@ -12,19 +16,23 @@ const rl = readline.createInterface({
 
 const templates = [
     {
-        name: 'Vite + Svelte',
+        name: 'siyuan-note/plugin-sample',
+        url: 'https://github.com/siyuan-note/plugin-sample'
+    },
+    {
+        name: 'siyuan-note/plugin-sample-vite-svelt',
         url: 'https://github.com/siyuan-note/plugin-sample-vite-svelte'
     },
     {
-        name: 'Vite',
+        name: 'frostime/plugin-sample-vit',
         url: 'https://github.com/frostime/plugin-sample-vite'
     },
     {
-        name: 'Vite + SolidJS',
+        name: 'frostime/plugin-sample-vite-solidjs',
         url: 'https://github.com/frostime/plugin-sample-vite-solidjs'
     },
     {
-        name: 'Minimal',
+        name: 'frostime/plugin-sample-min',
         url: 'https://github.com/frostime/plugin-sample-min'
     }
 ];
@@ -91,7 +99,8 @@ function updateJsonFiles(info) {
             data.name = info.name;
             data.author = info.author;
             data.version = info.version.replace(/^v/, '');
-            data.url = `https://github.com/${info.author}/${info.name}`;
+            const url = `https://github.com/${info.author}/${info.name}`;
+            data[file === 'plugin.json' ? 'url' : 'repository'] = url;
             fs.writeFileSync(file, JSON.stringify(data, null, 2));
         }
     });
@@ -102,6 +111,7 @@ function initGit() {
         execSync('git init', { stdio: 'pipe' });
         execSync('git add .', { stdio: 'pipe' });
         execSync('git branch -m master main', { stdio: 'pipe' });
+        execSync('git commit -m "🎉 Initial commit"', { stdio: 'pipe' });
     } catch (error) {
         console.error('❌ Error initializing Git repository:', error.message);
         console.error('Stack Trace:', error.stack);
@@ -119,12 +129,70 @@ function printSummary(info) {
 function printGithubInstructions(info) {
     console.log('\n🚀 To upload your plugin to GitHub:');
     console.log(`1. Create a new repository on GitHub: ${info.name}`);
-    console.log(`2. git remote add origin ssh://git@github.com/${info.author}/${info.name}.git`);
+    console.log(`2. git remote add origin https://github.com/${info.author}/${info.name}.git`);
     console.log('3. git push -u origin main');
 }
 
+async function handleGithubInteraction(info) {
+    const useGithub = await promptUser('\n🚀 Do you want to upload your plugin to GitHub now? (y/n): ');
+    if (useGithub.toLowerCase() !== 'y') {
+        return;
+    }
+
+    let token = getGithubToken();
+    if (!token) {
+        console.log('To interact with GitHub, you need to provide a personal access token.');
+        console.log('You can create one at https://github.com/settings/tokens');
+        console.log('Ensure the token has the "repo" scope.');
+        token = await promptUser('Enter your GitHub personal access token: ');
+        const saveToken = await promptUser('Do you want to save this token for future use? (y/n): ');
+        if (saveToken.toLowerCase() === 'y') {
+            saveGithubToken(token);
+        }
+    }
+
+    await initGithub(token);
+
+    let repoUrl = '';
+    const repoExists = await checkRepoExists(info.author, info.name);
+    if (repoExists) {
+        console.log(`Repository already exists: https://github.com/${info.author}/${info.name}`);
+        const proceed = await promptUser('Do you want to push to this existing repository? (y/n): ');
+        if (proceed.toLowerCase() !== 'y') {
+            return;
+        }
+    } else {
+        console.log(`Creating a new repository: ${info.name}`);
+        repoUrl = await createRepo(info.name, `SiYuan plugin: ${info.name}`);
+        // Wait several seconds for the repository to be created
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        console.log('Repository created: ' + repoUrl);
+    }
+
+    const sshUr = `git@github.com:${info.author}/${info.name}.git`;
+    console.log(`Pushing to GitHub: ${sshUr}`);
+    await pushToGithub(sshUr);
+    console.log('Successfully pushed to GitHub!\n');
+
+    const workflow = await promptUser('⚡ Do you want to enable GitHub Actions for your plugin? (y/n): ');
+    if (workflow.toLowerCase() === 'y') {
+        console.log('Enabling GitHub Actions...');
+        enableWorkflowPermissions(info.author, info.name);
+        console.log('✔️ GitHub Actions enabled!');
+    }
+
+    console.log(`✨ Congratulations! Now you can visit your plugin at: ${repoUrl}`);
+
+}
+
 async function createSyPlugin() {
-    console.log('🚀 Welcome to SiYuan Plugin Creator!');
+    // Get the directory name of the current module
+    const __dirname = dirname(fileURLToPath(import.meta.url));
+    const thisDir = fs.realpathSync(__dirname);
+    const packageJson = JSON.parse(fs.readFileSync(thisDir + '/../package.json', 'utf8'));
+    const { author, version } = packageJson;
+    const copyright = `Copyright © ${new Date().getFullYear()} ${author}. Version ${version}`;
+    console.log('🚀 Welcome to SiYuan Plugin Creator! ' + copyright);
 
     if (!checkGit()) {
         error('Git is not installed. Please install Git and try again.');
@@ -156,6 +224,13 @@ async function createSyPlugin() {
     printSummary(info);
 
     printGithubInstructions(info);
+
+    try {
+        await handleGithubInteraction(info);
+    } catch (error) {
+        console.error('❌ During GitHub interaction, something went wrong');
+        console.error('Stack Trace:', error.stack);
+    }
 
     rl.close();
 }

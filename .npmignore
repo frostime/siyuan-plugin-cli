@@ -1,5 +1,19 @@
-.github
-.vscode
-src
 node_modules
 *.tgz
+
+# 开发文件和目录
+.vscode/
+.github/
+scripts/
+
+# 测试文件
+test/
+*.test.js
+
+# 文档文件
+docs/
+
+# 其他不需要发布的文件
+.gitignore
+.npmrc
+*.log
