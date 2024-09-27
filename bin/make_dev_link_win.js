@@ -11,8 +11,14 @@ const scriptPath = path.join(__dirname, 'make_dev_link.js');
 const workingDirectory = process.cwd();
 // console.log(`Working directory: ${workingDirectory}`);
 
+// Parse from command line arguments
+let arg = '';
+if (process.argv.length > 2) {
+    arg = process.argv[2];
+}
+
 // Use Set-Location to change the working directory in PowerShell
-const run = `Set-Location -Path "${workingDirectory}"; node "${scriptPath}"; pause`;
+const run = `Set-Location -Path "${workingDirectory}"; node "${scriptPath}" ${arg}; pause`;
 
 const command = `
 powershell -Command "Start-Process -Verb RunAs powershell.exe -Args '-Command \"${run}\"'"

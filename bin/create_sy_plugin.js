@@ -24,7 +24,7 @@ const templates = [
         url: 'https://github.com/siyuan-note/plugin-sample-vite-svelte'
     },
     {
-        name: 'frostime/plugin-sample-vit',
+        name: 'frostime/plugin-sample-vite',
         url: 'https://github.com/frostime/plugin-sample-vite'
     },
     {

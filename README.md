@@ -77,6 +77,12 @@ Note: On Windows, administrative privileges are required to create symbolic link
 
 `make-link` uses the `./dev` directory as the plugin development directory by default; `make-install` uses the `./dist` directory as the directory for compiled plugin files by default.
 
+You can specify the directory in the script by passing a parameter, for example:
+
+```bash
+npx make-link ./
+```
+
 ```bash
 ❯❯❯ npx make-link
 >>> Try to visit constant "targetDir" in make_dev_link.js...
@@ -186,6 +192,12 @@ Resolving deltas: 100% (6/6), done.
 注意: 在 Windows 下，需要管理员权限来创建软链接，你可以在管理员模式下运行 `npx make-link`，或者使用 `npx make-link-win` 来自动请求管理员权限。
 
 `make-link` 默认使用 `./dev` 目录作为插件开发目录；`make-install` 默认使用 `./dist` 目录作为编译后的插件文件。
+
+你可以在脚本后面传入一个参数来指定目录，例如:
+
+```bash
+npx make-link ./
+```
 
 
 ```bash
