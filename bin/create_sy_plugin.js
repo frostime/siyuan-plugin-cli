@@ -17,23 +17,23 @@ const rl = readline.createInterface({
 const templates = [
     {
         name: 'siyuan-note/plugin-sample',
-        url: 'https://github.com/siyuan-note/plugin-sample'
+        url: 'git@github.com:siyuan-note/plugin-sample.git'
     },
     {
         name: 'siyuan-note/plugin-sample-vite-svelt',
-        url: 'https://github.com/siyuan-note/plugin-sample-vite-svelte'
+        url: 'git@github.com:siyuan-note/plugin-sample-vite-svelte.git'
     },
     {
         name: 'frostime/plugin-sample-vite',
-        url: 'https://github.com/frostime/plugin-sample-vite'
+        url: 'git@github.com:frostime/plugin-sample-vite.git'
     },
     {
         name: 'frostime/plugin-sample-vite-solidjs',
-        url: 'https://github.com/frostime/plugin-sample-vite-solidjs'
+        url: 'git@github.com:frostime/plugin-sample-vite-solidjs.git'
     },
     {
         name: 'frostime/plugin-sample-min',
-        url: 'https://github.com/frostime/plugin-sample-min'
+        url: 'git@github.com:frostime/plugin-sample-min.git'
     }
 ];
 
@@ -87,6 +87,10 @@ async function checkCurrentFolder() {
 }
 
 function cloneRepository(url) {
+    if (!url.endsWith('.git')) {
+        url += '.git';
+    }
+
     execSync(`git clone ${url} .`, { stdio: 'inherit' });
     fs.rmSync('.git', { recursive: true, force: true });
 }
@@ -169,20 +173,42 @@ async function handleGithubInteraction(info) {
         console.log('Repository created: ' + repoUrl);
     }
 
-    const sshUr = `git@github.com:${info.author}/${info.name}.git`;
-    console.log(`Pushing to GitHub: ${sshUr}`);
-    await pushToGithub(sshUr);
-    console.log('Successfully pushed to GitHub!\n');
+    console.log(`\n✨ Congratulations! New plugin will be at: ${repoUrl}\n`);
 
     const workflow = await promptUser('⚡ Do you want to enable GitHub Actions for your plugin? (y/n): ');
     if (workflow.toLowerCase() === 'y') {
         console.log('Enabling GitHub Actions...');
-        enableWorkflowPermissions(info.author, info.name);
+        try {
+            await enableWorkflowPermissions(info.author, info.name);
+        } catch (error) {
+            console.error('❌ Error enabling GitHub Actions:', error.message);
+            console.error('Stack Trace:', error.stack);
+        }
         console.log('✔️ GitHub Actions enabled!');
     }
 
-    console.log(`✨ Congratulations! Now you can visit your plugin at: ${repoUrl}`);
+    const push = async () => {
+        const sshUr = `git@github.com:${info.author}/${info.name}.git`;
+        console.log(`\n🔗 Try to push to GitHub: ${sshUr}`);
+        try {
+            await pushToGithub(sshUr);
+        } catch (error) {
+            console.error('❌ Error pushing to GitHub:', error.message);
+            console.error('Stack Trace:', error.stack);
+            return false;
+        }
+        console.log('🚀 Successfully pushed to GitHub!\n');
+        return true;
+    }
 
+    let succeed = await push();
+    // Try push if failed
+    if (!succeed) {
+        let yes = await promptUser('❌ Failed to push to GitHub. Do you want to try again? (y/n): ');
+        if (yes.toLowerCase() === 'y') {
+            succeed = await push();
+        }
+    }
 }
 
 async function createSyPlugin() {

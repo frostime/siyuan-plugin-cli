@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2024-09-16 21:38:16
  * @FilePath     : /bin/github.js
- * @LastEditTime : 2024-09-16 21:38:25
+ * @LastEditTime : 2024-10-02 19:09:46
  * @Description  : 
  */
 import { Octokit } from "@octokit/rest";
@@ -46,6 +46,7 @@ export function getGithubToken() {
     const configPath = `${process.env.HOME}/.siyuan-plugin-cli`;
     if (fs.existsSync(configPath)) {
         const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+        console.log('🔑 Using existing GitHub token stored in ~/.siyuan-plugin-cli');
         return config.githubToken;
     }
     return null;
@@ -55,6 +56,7 @@ export function saveGithubToken(token) {
     const configPath = `${process.env.HOME}/.siyuan-plugin-cli`;
     const config = { githubToken: token };
     fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    console.log('🔑 GitHub token saved in ~/.siyuan-plugin-cli');
 }
 
 /**

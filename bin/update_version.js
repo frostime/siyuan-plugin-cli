@@ -71,6 +71,50 @@ function incrementVersion(version, type) {
     return `${major}.${minor}.${patch}`;
 }
 
+const chooseNewVersion = async (currentVersion) => {
+    // Calculate potential new versions for auto-update
+    const newPatchVersion = incrementVersion(currentVersion, 'patch');
+    const newMinorVersion = incrementVersion(currentVersion, 'minor');
+    const newMajorVersion = incrementVersion(currentVersion, 'major');
+
+    // Prompt the user with formatted options
+    console.log('🔄  How would you like to update the version?\n');
+    console.log(`   1️⃣  Auto update \x1b[33mpatch\x1b[0m version   (new version: \x1b[32m${newPatchVersion}\x1b[0m)`);
+    console.log(`   2️⃣  Auto update \x1b[33mminor\x1b[0m version   (new version: \x1b[32m${newMinorVersion}\x1b[0m)`);
+    console.log(`   3️⃣  Auto update \x1b[33mmajor\x1b[0m version   (new version: \x1b[32m${newMajorVersion}\x1b[0m)`);
+    console.log(`   4️⃣  Input version \x1b[33mmanually\x1b[0m`);
+    // Press 0 to skip version update
+    console.log('   0️⃣  Quit without updating\n');
+
+    const updateChoice = await promptUser('👉  Please choose (1/2/3/4): ');
+
+    let newVersion;
+
+    switch (updateChoice.trim()) {
+        case '1':
+            newVersion = newPatchVersion;
+            break;
+        case '2':
+            newVersion = newMinorVersion;
+            break;
+        case '3':
+            newVersion = newMajorVersion;
+            break;
+        case '4':
+            newVersion = await promptUser('✍️  Please enter the new version (in a.b.c format): ');
+            break;
+        case '0':
+            console.log('\n🛑  Skipping version update.');
+            return null;
+        default:
+            console.log('\n❌  Invalid option, no version update.');
+            return null;
+    }
+
+    return newVersion;
+
+}
+
 // Helper function to check file existence
 const fileExists = (filePath) => fs.existsSync(filePath);
 
@@ -104,43 +148,18 @@ const fileExists = (filePath) => fs.existsSync(filePath);
 
         console.log(`\n🌟  Current version: \x1b[36m${currentVersion}\x1b[0m\n`);
 
-        // Calculate potential new versions for auto-update
-        const newPatchVersion = incrementVersion(currentVersion, 'patch');
-        const newMinorVersion = incrementVersion(currentVersion, 'minor');
-        const newMajorVersion = incrementVersion(currentVersion, 'major');
-
-        // Prompt the user with formatted options
-        console.log('🔄  How would you like to update the version?\n');
-        console.log(`   1️⃣  Auto update \x1b[33mpatch\x1b[0m version   (new version: \x1b[32m${newPatchVersion}\x1b[0m)`);
-        console.log(`   2️⃣  Auto update \x1b[33mminor\x1b[0m version   (new version: \x1b[32m${newMinorVersion}\x1b[0m)`);
-        console.log(`   3️⃣  Auto update \x1b[33mmajor\x1b[0m version   (new version: \x1b[32m${newMajorVersion}\x1b[0m)`);
-        console.log(`   4️⃣  Input version \x1b[33mmanually\x1b[0m`);
-        // Press 0 to skip version update
-        console.log('   0️⃣  Quit without updating\n');
-
-        const updateChoice = await promptUser('👉  Please choose (1/2/3/4): ');
-
         let newVersion;
-
-        switch (updateChoice.trim()) {
-            case '1':
-                newVersion = newPatchVersion;
-                break;
-            case '2':
-                newVersion = newMinorVersion;
-                break;
-            case '3':
-                newVersion = newMajorVersion;
-                break;
-            case '4':
-                newVersion = await promptUser('✍️  Please enter the new version (in a.b.c format): ');
-                break;
-            case '0':
-                console.log('\n🛑  Skipping version update.');
+        // check if argument is provided
+        const choice = ['patch', 'minor', 'major'];
+        if (choice.includes(process.argv[2])) {
+            newVersion = incrementVersion(currentVersion, process.argv?.[2]);
+            console.log(`\n✅  Version successfully updated to: \x1b[32m${newVersion}\x1b[0m\n`);
+            return;
+        } else {
+            newVersion = await chooseNewVersion(currentVersion);
+            if (!newVersion) {
                 return;
-            default:
-                console.log('\n❌  Invalid option, no version update.');
-                return;
+            }
         }
 
         // Update the version in plugin.json

@@ -1,6 +1,6 @@
 {
   "name": "siyuan-plugin-cli",
-  "version": "2.3.1",
+  "version": "2.4.0",
   "type": "module",
   "description": "Development scripts for SiYuan Plugin",
   "main": "./bin/index.js",
@@ -13,9 +13,10 @@
   },
   "bin": {
     "make-link": "./bin/make_dev_link.js",
+    "make-link-win": "./bin/make_dev_link_win.js",
     "make-install": "./bin/make_dist_install.js",
     "update-version": "./bin/update_version.js",
-    "make-link-win": "./bin/make_dev_link_win.js",
+    "up-ver": "./bin/update_version.js",
     "create-sy-plugin": "./bin/create_sy_plugin.js",
     "create-plugin": "./bin/create_sy_plugin.js"
   },
