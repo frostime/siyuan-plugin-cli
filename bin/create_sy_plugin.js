@@ -105,6 +105,12 @@ function updateJsonFiles(info) {
             data.version = info.version.replace(/^v/, '');
             const url = `https://github.com/${info.author}/${info.name}`;
             data[file === 'plugin.json' ? 'url' : 'repository'] = url;
+            if (file === 'package.json') {
+                if (!data.description.endsWith('.')) {
+                    data.description += '.';
+                }
+                data.description += ` Created with siyuan-plugin-cli v${packageJson.version}.`;
+            }
             fs.writeFileSync(file, JSON.stringify(data, null, 2));
         }
     });
