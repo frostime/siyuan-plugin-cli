@@ -151,7 +151,7 @@ const fileExists = (filePath) => fs.existsSync(filePath);
         let newVersion;
         // check if argument is provided
         const choice = ['patch', 'minor', 'major'];
-        if (choice.includes(process.argv[2])) {
+        if (process.argv.length >= 2 && choice.includes(process.argv[2])) {
             newVersion = incrementVersion(currentVersion, process.argv?.[2]);
             console.log(`\n✅  Version successfully updated to: \x1b[32m${newVersion}\x1b[0m\n`);
             return;
