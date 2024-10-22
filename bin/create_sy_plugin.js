@@ -20,7 +20,7 @@ const templates = [
         url: 'git@github.com:siyuan-note/plugin-sample.git'
     },
     {
-        name: 'siyuan-note/plugin-sample-vite-svelt',
+        name: 'siyuan-note/plugin-sample-vite-svelte',
         url: 'git@github.com:siyuan-note/plugin-sample-vite-svelte.git'
     },
     {

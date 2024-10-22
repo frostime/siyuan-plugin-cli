@@ -5,7 +5,8 @@
   "description": "Development scripts for SiYuan Plugin",
   "main": "./bin/index.js",
   "scripts": {
-    "prepublishOnly": "node scripts/prepare-publish.js"
+    "prepublishOnly": "node scripts/prepare-publish.js",
+    "pack": "npm pack"
   },
   "repository": {
     "type": "git",
