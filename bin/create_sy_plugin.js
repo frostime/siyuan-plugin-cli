@@ -95,7 +95,7 @@ function cloneRepository(url) {
     fs.rmSync('.git', { recursive: true, force: true });
 }
 
-function updateJsonFiles(info) {
+function updateJsonFiles(info, packageJson) {
     const files = ['plugin.json', 'package.json'];
     files.forEach(file => {
         if (fs.existsSync(file)) {
@@ -109,7 +109,7 @@ function updateJsonFiles(info) {
                 if (!data.description.endsWith('.')) {
                     data.description += '.';
                 }
-                data.description += ` Created with siyuan-plugin-cli v${packageJson.version}.`;
+                data.description += ` Created with siyuan-plugin-cli v${packageJson?.version}.`;
             }
             fs.writeFileSync(file, JSON.stringify(data, null, 2));
         }
@@ -246,7 +246,7 @@ async function createSyPlugin() {
     cloneRepository(template.url);
 
     console.log('🔧 Updating configuration files...');
-    updateJsonFiles(info);
+    updateJsonFiles(info, packageJson);
 
     console.log('🔧 Initializing Git repository...');
     initGit();
