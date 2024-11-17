@@ -32,6 +32,10 @@ const templates = [
         url: 'git@github.com:frostime/plugin-sample-vite-solidjs.git'
     },
     {
+        name: 'Wetoria/plugin-sample-vite-vue.git',
+        url: 'git@github.com:Wetoria/plugin-sample-vite-vue.git'
+    },
+    {
         name: 'frostime/plugin-sample-min',
         url: 'git@github.com:frostime/plugin-sample-min.git'
     }
