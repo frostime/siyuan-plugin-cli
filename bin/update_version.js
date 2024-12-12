@@ -41,52 +41,70 @@ function promptUser(query) {
     }));
 }
 
-// Function to parse the version string
+// Function to parse the version string with suffixes
 function parseVersion(version) {
-    const [major, minor, patch] = version.split('.').map(Number);
-    return { major, minor, patch };
+    const match = version.match(/^(\d+)\.(\d+)\.(\d+)([.\-][a-zA-Z0-9]+)?$/);
+    if (!match) {
+        throw new Error(`Invalid version format: ${version}`);
+    }
+    const [, major, minor, patch, suffix = ''] = match;
+    return {
+        major: parseInt(major, 10),
+        minor: parseInt(minor, 10),
+        patch: parseInt(patch, 10),
+        suffix
+    };
 }
 
-// Function to auto-increment version parts
+// Function to increment version parts and preserve/modify suffixes
 function incrementVersion(version, type) {
-    let { major, minor, patch } = parseVersion(version);
+    const { major, minor, patch, suffix } = parseVersion(version);
+    let newVersion;
 
     switch (type) {
         case 'major':
-            major++;
-            minor = 0;
-            patch = 0;
+            newVersion = `${major + 1}.0.0`;
             break;
         case 'minor':
-            minor++;
-            patch = 0;
+            newVersion = `${major}.${minor + 1}.0`;
             break;
         case 'patch':
-            patch++;
+            newVersion = `${major}.${minor}.${patch + 1}`;
+            break;
+        case 'suffix': // Increment suffix, if it exists
+            if (!suffix) {
+                throw new Error('No suffix to increment.');
+            }
+            const suffixMatch = suffix.match(/([a-zA-Z\-]+)(\d+)$/);
+            if (!suffixMatch) {
+                throw new Error('Unsupported suffix format for incrementing.');
+            }
+            const [_, base, num] = suffixMatch;
+            newVersion = `${major}.${minor}.${patch}${base}${parseInt(num, 10) + 1}`;
             break;
         default:
-            break;
+            throw new Error(`Unsupported increment type: ${type}`);
     }
 
-    return `${major}.${minor}.${patch}`;
+    return newVersion;
 }
 
+// Enhanced prompt to choose new version
 const chooseNewVersion = async (currentVersion) => {
     // Calculate potential new versions for auto-update
     const newPatchVersion = incrementVersion(currentVersion, 'patch');
     const newMinorVersion = incrementVersion(currentVersion, 'minor');
     const newMajorVersion = incrementVersion(currentVersion, 'major');
 
-    // Prompt the user with formatted options
     console.log('🔄  How would you like to update the version?\n');
     console.log(`   1️⃣  Auto update \x1b[33mpatch\x1b[0m version   (new version: \x1b[32m${newPatchVersion}\x1b[0m)`);
     console.log(`   2️⃣  Auto update \x1b[33mminor\x1b[0m version   (new version: \x1b[32m${newMinorVersion}\x1b[0m)`);
     console.log(`   3️⃣  Auto update \x1b[33mmajor\x1b[0m version   (new version: \x1b[32m${newMajorVersion}\x1b[0m)`);
-    console.log(`   4️⃣  Input version \x1b[33mmanually\x1b[0m`);
-    // Press 0 to skip version update
+    console.log(`   4️⃣  Increment suffix if applicable`);
+    console.log(`   5️⃣  Input version \x1b[33mmanually\x1b[0m`);
     console.log('   0️⃣  Quit without updating\n');
 
-    const updateChoice = await promptUser('👉  Please choose (1/2/3/4): ');
+    const updateChoice = await promptUser('👉  Please choose (1/2/3/4/5): ');
 
     let newVersion;
 
@@ -101,7 +119,15 @@ const chooseNewVersion = async (currentVersion) => {
             newVersion = newMajorVersion;
             break;
         case '4':
-            newVersion = await promptUser('✍️  Please enter the new version (in a.b.c format): ');
+            try {
+                newVersion = incrementVersion(currentVersion, 'suffix');
+            } catch (error) {
+                console.error(`❌  Error: ${error.message}`);
+                return null;
+            }
+            break;
+        case '5':
+            newVersion = await promptUser('✍️  Please enter the new version (in valid format): ');
             break;
         case '0':
             console.log('\n🛑  Skipping version update.');
@@ -112,11 +138,7 @@ const chooseNewVersion = async (currentVersion) => {
     }
 
     return newVersion;
-
-}
-
-// Helper function to check file existence
-const fileExists = (filePath) => fs.existsSync(filePath);
+};
 
 // Main script
 (async function () {
@@ -125,40 +147,31 @@ const fileExists = (filePath) => fs.existsSync(filePath);
         const packageJsonPath = path.join(process.cwd(), 'package.json');
 
         // Check if plugin.json exists
-        if (!fileExists(pluginJsonPath)) {
+        if (!fs.existsSync(pluginJsonPath)) {
             throw new Error('plugin.json file is required but not found.');
         }
 
         // Read plugin.json
         const pluginData = await readJsonFile(pluginJsonPath);
 
-        // Try to read package.json only if it exists
-        let packageData = {};
-        const packageExists = fileExists(packageJsonPath);
-        if (packageExists) {
-            packageData = await readJsonFile(packageJsonPath);
-        }
+        // Try to read package.json if it exists
+        const packageData = fs.existsSync(packageJsonPath) ? await readJsonFile(packageJsonPath) : {};
 
-        // Get the current version from plugin.json (if package.json exists, use it as a fallback)
-        const currentVersion = pluginData.version || (packageExists ? packageData.version : null);
-
+        // Get the current version
+        const currentVersion = pluginData.version || packageData.version;
         if (!currentVersion) {
-            throw new Error('No version found in plugin.json (or package.json if it exists).');
+            throw new Error('No version found in plugin.json or package.json.');
         }
 
         console.log(`\n🌟  Current version: \x1b[36m${currentVersion}\x1b[0m\n`);
 
         let newVersion;
-        // check if argument is provided
-        const choice = ['patch', 'minor', 'major'];
-        if (process.argv.length >= 2 && choice.includes(process.argv[2])) {
-            newVersion = incrementVersion(currentVersion, process.argv?.[2]);
-            console.log(`\n✅  Version successfully updated to: \x1b[32m${newVersion}\x1b[0m\n`);
+        if (process.argv.length > 2) {
+            const type = process.argv[2];
+            newVersion = incrementVersion(currentVersion, type);
         } else {
             newVersion = await chooseNewVersion(currentVersion);
-            if (!newVersion) {
-                return;
-            }
+            if (!newVersion) return;
         }
 
         // Update the version in plugin.json
@@ -166,13 +179,12 @@ const fileExists = (filePath) => fs.existsSync(filePath);
         await writeJsonFile(pluginJsonPath, pluginData);
 
         // If package.json exists, update its version as well
-        if (packageExists) {
+        if (Object.keys(packageData).length > 0) {
             packageData.version = newVersion;
             await writeJsonFile(packageJsonPath, packageData);
         }
 
         console.log(`\n✅  Version successfully updated to: \x1b[32m${newVersion}\x1b[0m\n`);
-
     } catch (error) {
         console.error('❌  Error:', error.message);
     }
