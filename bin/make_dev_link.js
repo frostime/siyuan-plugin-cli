@@ -2,17 +2,38 @@
 
 import fs from 'fs';
 import path from 'path';
-import { log, error, getSiYuanDir, chooseTarget, getThisPluginName, makeSymbolicLink } from './utils.js';
+import readline from 'node:readline';
+import { log, error, getSiYuanDir, chooseTarget, getThisPluginName, cmpPath } from './utils.js';
 
 let targetDir = '';
 let devDirName = 'dev';
 
-// Parse from command line arguments
+// Parse flags/arguments
+// Supported:
+//   - no args: link ./dev
+//   - positional <dir>: link ./<dir>
+//   - --dist: link ./dist
+//   - --dev: link ./dev
+//   - --src=<dir>: link ./<dir>
 if (process.argv.length > 2) {
-    let arg = process.argv[2];
-    log(`>>> Got dev directory name from command line argument: ${arg}`);
-    if (arg !== '') {
-        devDirName = arg.replace(/\/$/, '');
+    const args = process.argv.slice(2);
+    // Prefer explicit flags
+    const srcArg = args.find(a => a.startsWith('--src='));
+    if (srcArg) {
+        devDirName = srcArg.split('=')[1] || 'dev';
+        log(`>>> Using --src: ${devDirName}`);
+    } else if (args.includes('--dist')) {
+        devDirName = 'dist';
+        log('>>> Using --dist, will link ./dist');
+    } else if (args.includes('--dev')) {
+        devDirName = 'dev';
+        log('>>> Using --dev, will link ./dev');
+    } else if (args[0] && !args[0].startsWith('-')) {
+        const arg = args[0];
+        log(`>>> Got directory name from argument: ${arg}`);
+        if (arg !== '') {
+            devDirName = arg.replace(/\/$/, '');
+        }
     }
 }
 
@@ -47,16 +68,15 @@ if (!fs.existsSync(targetDir)) {
 }
 
 /**
- * 2. The dev directory, which contains the compiled plugin code
+ * 2. The dev/dist directory to link
  */
 const devDir = path.join(process.cwd(), devDirName);
 if (!fs.existsSync(devDir)) {
     fs.mkdirSync(devDir);
 }
 
-
 /**
- * 3. The target directory to make symbolic link to dev directory
+ * 3. The target directory to make symbolic link to dev/dist directory
  */
 const name = getThisPluginName();
 if (name === null) {
@@ -64,7 +84,62 @@ if (name === null) {
 }
 const targetPath = `${targetDir}/${name}`;
 
+// Helper to prompt yes/no
+async function confirm(question) {
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+    const ans = await new Promise((resolve) => rl.question(question, resolve));
+    rl.close();
+    const a = (ans || '').trim().toLowerCase();
+    return a === 'y' || a === 'yes';
+}
+
 /**
- * 4. Make symbolic link
+ * 4. Create or overwrite symlink with conditional warning
  */
-makeSymbolicLink(devDir, targetPath);
+if (!fs.existsSync(targetPath)) {
+    fs.symlinkSync(devDir, targetPath, 'dir');
+    log(`Done! Created symlink ${targetPath} --> ${devDir}`);
+    process.exit(0);
+}
+
+// Target exists
+const isSymbol = fs.lstatSync(targetPath).isSymbolicLink();
+if (!isSymbol) {
+    error(`Failed! ${targetPath} already exists and is not a symbolic link`);
+    process.exit(1);
+}
+
+const existedPath = fs.readlinkSync(targetPath);
+if (cmpPath(existedPath, devDir)) {
+    log(`Good! ${targetPath} is already linked to ${devDir}`);
+    process.exit(0);
+}
+
+// Determine if switching between this project's ./dev and ./dist
+const projDev = path.join(process.cwd(), 'dev');
+const projDist = path.join(process.cwd(), 'dist');
+const newIsDev = cmpPath(devDir, projDev);
+const newIsDist = cmpPath(devDir, projDist);
+const oldIsDev = cmpPath(existedPath, projDev);
+const oldIsDist = cmpPath(existedPath, projDist);
+
+let shouldWarn = false;
+let warnMsg = '';
+if ((oldIsDev && newIsDist) || (oldIsDist && newIsDev)) {
+    shouldWarn = true;
+    warnMsg = `>>> Detected switching link from ${oldIsDev ? './dev' : './dist'} to ${newIsDev ? './dev' : './dist'}. Overwrite? [y/N] `;
+}
+
+(async () => {
+    if (shouldWarn) {
+        const ok = await confirm(warnMsg);
+        if (!ok) {
+            log('Aborted. No changes made.');
+            process.exit(0);
+        }
+    }
+    // Overwrite without warning for other cases
+    fs.unlinkSync(targetPath);
+    fs.symlinkSync(devDir, targetPath, 'dir');
+    log(`Done! Updated symlink ${targetPath} --> ${devDir}`);
+})();

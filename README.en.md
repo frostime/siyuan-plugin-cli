@@ -1,4 +1,4 @@
-# English Documentation
+# English Documentation, 
 
 This project provides some CLI tools for SiYuan plugin development.
 
@@ -68,29 +68,47 @@ Resolving deltas: 100% (6/6), done.
 ### Development link vs Production install
 
 - Development: `npx make-link` creates a symbolic link to the SiYuan plugin directory.
-  - Links the `dev` directory under plugin development to the `plugins` directory under the SiYuan workspace.
+  - By default, links the local `./dev` directory to `<workspace>/data/plugins/<plugin-name>`.
+  - You can also link `./dist` (or any directory) using flags:
+    - `--dist` to link `./dist`
+    - `--dev` to force `./dev`
+    - `--src=<dir>` or a positional `<dir>` to link a custom folder
   - On Windows, it is recommended to run `npx make-link-win` (admin privileges required to create symlinks).
 
 - Production: `npx make-install` installs the built plugin to the SiYuan plugin directory.
   - Copies the files from your build output (default `./dist`) into the SiYuan `plugins/<your-plugin-name>` directory.
   - This is the command to use when you want to test the production build (no symlinks).
 
+- Check current status: `npx check-link` tells you whether your plugin is linked in the chosen workspace,
+  and if so whether it points to `dev`, `dist`, or another path. If files were copied via `make-install`,
+  it will report that the target exists but is not a symlink.
+
 Notes:
-- `make-link` uses `./dev` by default.
+- `make-link` uses `./dev` by default; use `--dist` or `--src=<dir>` to change.
+- If the target plugin already has a symlink, `make-link` will overwrite it. It will ask for confirmation only when switching between this project's `./dev` and `./dist` (dev ↔ dist); other changes overwrite silently.
 - `make-install` uses `./dist` by default. You can pass a custom output directory name as the first argument, e.g. `npx make-install build`.
 - On Windows, admin privileges are only needed for `make-link`; `make-install` performs normal file copy.
 
 Examples:
 
 ```bash
-# Create a dev symlink from ./dev
-npx make-link ./
+# Create a dev symlink from ./dev (default)
+npx make-link
+
+# Create a symlink from ./dist
+npx make-link --dist
+
+# Or specify a custom folder (e.g., ./build)
+npx make-link --src=build
 
 # Install the production build from ./dist (default)
 npx make-install
 
 # Install from a custom build directory (e.g., ./build)
 npx make-install build
+
+# Check whether the plugin is linked (and to which path)
+npx check-link
 ```
 
 ```bash

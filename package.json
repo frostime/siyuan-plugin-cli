@@ -6,7 +6,8 @@
   "main": "./bin/index.js",
   "scripts": {
     "prepublishOnly": "node scripts/prepare-publish.js",
-    "pack": "npm pack"
+    "pack": "npm pack",
+    "test": "node --test"
   },
   "repository": {
     "type": "git",
@@ -16,6 +17,7 @@
     "make-link": "./bin/make_dev_link.js",
     "make-link-win": "./bin/make_dev_link_win.js",
     "make-install": "./bin/make_dist_install.js",
+    "check-link": "./bin/check_link.js",
     "update-version": "./bin/update_version.js",
     "up-ver": "./bin/update_version.js",
     "create-sy-plugin": "./bin/create_sy_plugin.js",

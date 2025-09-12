@@ -68,29 +68,46 @@ Resolving deltas: 100% (6/6), done.
 ### 开发链接 vs 生产安装
 
 - 开发模式：`npx make-link` 创建到 SiYuan 插件目录的软链接。
-  - 将开发中的 `dev` 目录链接到 SiYuan 工作空间的 `plugins` 目录。
+  - 默认把本地 `./dev` 目录链接到 `<workspace>/data/plugins/<plugin-name>`。
+  - 也可以通过参数把 `./dist`（或任意目录）链接过去：
+    - 使用 `--dist` 链接 `./dist`
+    - 使用 `--dev` 强制链接 `./dev`
+    - 使用 `--src=<dir>` 或 位置参数 `<dir>` 链接自定义目录
   - 在 Windows 上推荐使用 `npx make-link-win`（创建软链接需要管理员权限）。
 
 - 生产模式：`npx make-install` 将构建后的插件复制安装到 SiYuan 插件目录。
   - 会把你的构建输出（默认 `./dist`）复制到 SiYuan 的 `plugins/<你的插件名>` 目录。
   - 当你要测试生产构建（不使用软链接）时使用这个命令。
 
+- 状态检查：`npx check-link` 会告诉你当前插件是否在所选工作空间下被链接，
+  如果已链接，会标明是指向 `dev`、`dist` 还是其它路径；若为复制安装（非软链），会提示“不是软链”。
+
 注意：
-- `make-link` 默认使用 `./dev`。
+- `make-link` 默认使用 `./dev`；可以使用 `--dist` 或 `--src=<dir>` 切换。
+- 如果目标插件目录已有软链接，`make-link` 会进行覆盖。仅当从本项目的 `./dev` 与 `./dist` 之间切换（dev ↔ dist）时会进行覆盖确认提示；其它情况将直接覆盖。
 - `make-install` 默认使用 `./dist`。你可以把自定义输出目录名作为第一个参数传入，例如：`npx make-install build`。
 - Windows 上只有 `make-link` 需要管理员权限；`make-install` 是普通文件复制。
 
 示例：
 
 ```bash
-# 从 ./dev 创建开发软链接
-npx make-link ./
+# 从 ./dev 创建开发软链接（默认）
+npx make-link
+
+# 从 ./dist 创建软链
+npx make-link --dist
+
+# 指定自定义目录（例如 ./build）
+npx make-link --src=build
 
 # 从默认的 ./dist 安装生产构建
 npx make-install
 
 # 从自定义目录（例如 ./build）安装
 npx make-install build
+
+# 检查是否已链接（以及链接到哪个路径）
+npx check-link
 ```
 
 ```bash
