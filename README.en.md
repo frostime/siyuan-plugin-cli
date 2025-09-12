@@ -65,22 +65,32 @@ Resolving deltas: 100% (6/6), done.
 # Omit the following steps if you don't want to upload to GitHub
 ```
 
-### `make-link` and `make-install`
+### Development link vs Production install
 
-- `npx make-link` creates a symbolic link to the SiYuan plugin directory
-  - Links the `dev` directory under plugin development to the `plugins` directory under the SiYuan plugin directory
-  - Note: On Windows, it is recommended to run `npx make-link-win`
-- `npx make-install` installs the plugin to the SiYuan plugin directory
-  - Copies the files from the `dist` directory under plugin development to the SiYuan plugin directory
+- Development: `npx make-link` creates a symbolic link to the SiYuan plugin directory.
+  - Links the `dev` directory under plugin development to the `plugins` directory under the SiYuan workspace.
+  - On Windows, it is recommended to run `npx make-link-win` (admin privileges required to create symlinks).
 
-Note: On Windows, administrative privileges are required to create symbolic links. You can run `npx make-link` in administrator mode, or use `npx make-link-win` to automatically request administrative privileges.
+- Production: `npx make-install` installs the built plugin to the SiYuan plugin directory.
+  - Copies the files from your build output (default `./dist`) into the SiYuan `plugins/<your-plugin-name>` directory.
+  - This is the command to use when you want to test the production build (no symlinks).
 
-`make-link` uses the `./dev` directory as the plugin development directory by default; `make-install` uses the `./dist` directory as the directory for compiled plugin files by default.
+Notes:
+- `make-link` uses `./dev` by default.
+- `make-install` uses `./dist` by default. You can pass a custom output directory name as the first argument, e.g. `npx make-install build`.
+- On Windows, admin privileges are only needed for `make-link`; `make-install` performs normal file copy.
 
-You can specify the directory in the script by passing a parameter, for example:
+Examples:
 
 ```bash
+# Create a dev symlink from ./dev
 npx make-link ./
+
+# Install the production build from ./dist (default)
+npx make-install
+
+# Install from a custom build directory (e.g., ./build)
+npx make-install build
 ```
 
 ```bash

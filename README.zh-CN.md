@@ -65,22 +65,32 @@ Resolving deltas: 100% (6/6), done.
 # 后续步骤略
 ```
 
-### `make-link` 与 `make-install`
+### 开发链接 vs 生产安装
 
-- `npx make-link` 创建软链接到 SiYuan 插件目录
-  - 将插件开发下的 `dev` 目录链接到 SiYuan 插件目录下的 `plugins` 目录下
-  - 注意：在 Windows 下推荐运行 `npx make-link-win`
-- `npx make-install` 安装插件到 SiYuan 插件目录下
-    - 将插件开发下的 `dist` 目录中的文件复制到 SiYuan 的插件目录中
+- 开发模式：`npx make-link` 创建到 SiYuan 插件目录的软链接。
+  - 将开发中的 `dev` 目录链接到 SiYuan 工作空间的 `plugins` 目录。
+  - 在 Windows 上推荐使用 `npx make-link-win`（创建软链接需要管理员权限）。
 
-注意: 在 Windows 下，需要管理员权限来创建软链接，你可以在管理员模式下运行 `npx make-link`，或者使用 `npx make-link-win` 来自动请求管理员权限。
+- 生产模式：`npx make-install` 将构建后的插件复制安装到 SiYuan 插件目录。
+  - 会把你的构建输出（默认 `./dist`）复制到 SiYuan 的 `plugins/<你的插件名>` 目录。
+  - 当你要测试生产构建（不使用软链接）时使用这个命令。
 
-`make-link` 默认使用 `./dev` 目录作为插件开发目录；`make-install` 默认使用 `./dist` 目录作为编译后的插件文件。
+注意：
+- `make-link` 默认使用 `./dev`。
+- `make-install` 默认使用 `./dist`。你可以把自定义输出目录名作为第一个参数传入，例如：`npx make-install build`。
+- Windows 上只有 `make-link` 需要管理员权限；`make-install` 是普通文件复制。
 
-你可以在脚本后面传入一个参数来指定目录，例如:
+示例：
 
 ```bash
+# 从 ./dev 创建开发软链接
 npx make-link ./
+
+# 从默认的 ./dist 安装生产构建
+npx make-install
+
+# 从自定义目录（例如 ./build）安装
+npx make-install build
 ```
 
 ```bash
