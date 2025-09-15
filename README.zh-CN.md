@@ -1,4 +1,4 @@
-# 简体中文
+[简体中文](./README.zh-CN.md) | [README](./README.md)
 
 本项目为 SiYuan 插件开发的一些 CLI 工具。
 
