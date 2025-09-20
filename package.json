@@ -1,6 +1,6 @@
 {
   "name": "siyuan-plugin-cli",
-  "version": "2.4.6",
+  "version": "2.5.0",
   "type": "module",
   "description": "Development scripts for SiYuan Plugin",
   "main": "./bin/index.js",
