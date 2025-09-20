@@ -1,4 +1,54 @@
-node_modules/**
+# Node and general project
+node_modules/
+
+# Builds and bundles
+/dist/
+/build/
+/out/
+/.next/
+/.nuxt/
+/.svelte-kit/
+
+# Caches and temporary files
+.cache/
+.tmp/
+tmp/
+temp/
+/**/.DS_Store
+Thumbs.db
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# Coverage and test outputs
+coverage/
+*.lcov
+
+# Environment variables and local config
+.env
+.env.*.local
+*.local
+
+# TypeScript
+*.tsbuildinfo
+
+# Editors and IDEs
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Package archives
 *.tgz
-*.zip
-*.tar.gz
+
+# Lockfiles (keep the one you use)
+# yarn.lock
+# package-lock.json
+# pnpm-lock.yaml
